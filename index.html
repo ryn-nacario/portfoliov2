@@ -1792,20 +1792,25 @@ section {
   let ytPlayer = null;
   let musicStarted = false;
   let musicToggleBtn = null;
+  let scrollTriggered = false;
+  let scrollTimeout = null;
+
+  // Desktop breakpoint (matches your CSS @media query)
+  const DESKTOP_BREAKPOINT = 900;
 
   // YouTube API callback
   window.onYouTubeIframeAPIReady = function() {
     ytPlayer = new YT.Player('yt-player', {
       height: '1',
       width: '1',
-      videoId: 'fhzKLBZJC3w',
+      videoId: 'B9synWjqBn8', // ✅ NEW VIDEO ID
       playerVars: {
         'autoplay': 0,
         'controls': 0,
         'disablekb': 1,
         'fs': 0,
         'loop': 1,
-        'playlist': 'fhzKLBZJC3w',
+        'playlist': 'B9synWjqBn8', // Required for looping
         'modestbranding': 1,
         'rel': 0,
         'iv_load_policy': 3
@@ -1818,7 +1823,7 @@ section {
   };
 
   function onPlayerReady(event) {
-    // Player ready - wait for user interaction
+    // Player ready - wait for trigger
   }
 
   function onPlayerStateChange(event) {
@@ -1840,10 +1845,34 @@ section {
       musicToggleBtn.querySelector('span').textContent = 'Music: On';
     }
     
-    // Remove listeners after first trigger
-    ['click', 'touchstart', 'keydown'].forEach(evt => {
-      document.removeEventListener(evt, startBackgroundMusic, { passive: true });
-    });
+    // Remove scroll listener after trigger (desktop)
+    if (window.innerWidth >= DESKTOP_BREAKPOINT) {
+      window.removeEventListener('scroll', handleScrollTrigger, { passive: true });
+    }
+  }
+
+  // Debounced scroll handler for desktop trigger
+  function handleScrollTrigger() {
+    if (window.innerWidth < DESKTOP_BREAKPOINT) return;
+    if (scrollTriggered || musicStarted) return;
+    
+    // Debounce: only trigger after 500ms of continuous scrolling
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      if (window.scrollY > 50) { // Only trigger after scrolling down a bit
+        scrollTriggered = true;
+        startBackgroundMusic();
+      }
+    }, 500);
+  }
+
+  // Mobile fallback: click/touch to start music
+  function setupMobileFallback() {
+    if (window.innerWidth < DESKTOP_BREAKPOINT) {
+      ['click', 'touchstart'].forEach(evt => {
+        document.addEventListener(evt, startBackgroundMusic, { passive: true, once: true });
+      });
+    }
   }
 
   // Create music toggle button
@@ -1877,9 +1906,9 @@ section {
         musicToggleBtn.querySelector('span').textContent = 'Music: On';
         if (!musicStarted) {
           musicStarted = true;
-          ['click', 'touchstart', 'keydown'].forEach(evt => {
-            document.removeEventListener(evt, startBackgroundMusic, { passive: true });
-          });
+          if (window.innerWidth >= DESKTOP_BREAKPOINT) {
+            window.removeEventListener('scroll', handleScrollTrigger, { passive: true });
+          }
         }
       }
     });
@@ -1891,16 +1920,44 @@ section {
     }
   }
 
-  // Attach interaction listeners for music start
-  ['click', 'touchstart', 'keydown'].forEach(evt => {
-    document.addEventListener(evt, startBackgroundMusic, { passive: true });
+  // Setup event listeners based on device
+  function setupMusicTriggers() {
+    if (window.innerWidth >= DESKTOP_BREAKPOINT) {
+      // Desktop: scroll trigger
+      window.addEventListener('scroll', handleScrollTrigger, { passive: true });
+    } else {
+      // Mobile: click/touch fallback
+      setupMobileFallback();
+    }
+  }
+
+  // Handle window resize (in case user resizes browser)
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      if (musicStarted) return; // Don't re-setup if already started
+      
+      // Clear existing listeners
+      window.removeEventListener('scroll', handleScrollTrigger, { passive: true });
+      ['click', 'touchstart'].forEach(evt => {
+        document.removeEventListener(evt, startBackgroundMusic, { passive: true });
+      });
+      
+      // Re-setup based on new width
+      setupMusicTriggers();
+    }, 250);
   });
 
-  // Initialize toggle button after DOM is ready
+  // Initialize
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', createMusicToggle);
+    document.addEventListener('DOMContentLoaded', () => {
+      createMusicToggle();
+      setupMusicTriggers();
+    });
   } else {
     createMusicToggle();
+    setupMusicTriggers();
   }
 
   // Handle YouTube API load timing
