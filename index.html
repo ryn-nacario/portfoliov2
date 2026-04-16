@@ -17,9 +17,6 @@
 <script src="https://unpkg.com/split-type@0.3.4/umd/index.min.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 
-<!-- YouTube iframe API for background music -->
-<script src="https://www.youtube.com/iframe_api"></script>
-
 <style>
 /* ══════════════════════════════════════════════
    CSS CUSTOM PROPERTIES & RESET
@@ -1296,8 +1293,11 @@ section {
   <a href="#" class="footer-back-top magnetic">Back to Top <i data-lucide="arrow-up" style="width:12px;height:12px"></i></a>
 </footer>
 
-<!-- YouTube Background Music Player (Hidden) -->
-<div id="yt-player" style="position:fixed; bottom:-9999px; right:-9999px; width:1px; height:1px; opacity:0; pointer-events:none;" aria-hidden="true"></div>
+<!-- HTML5 Background Audio (Muted Autoplay) -->
+<audio id="bg-music" loop preload="auto" muted>
+  <source src="https://inspiring-kitsune-24be95.netlify.app/fff.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
 
 <!-- ══════════════════════════════════════════════
      JAVASCRIPT
@@ -1788,183 +1788,92 @@ section {
 
   lucide.createIcons();
 
-  // ═══════════ YOUTUBE BACKGROUND MUSIC ═══════════
-  let ytPlayer = null;
-  let musicStarted = false;
+  // ═══════════ HTML5 AUDIO BACKGROUND MUSIC (MUTED AUTOPLAY + UNMUTE ON INTERACTION) ═══════════
+  let bgMusic = null;
+  let hasUnmuted = false;
   let musicToggleBtn = null;
-  let scrollTriggered = false;
-  let scrollTimeout = null;
 
-  // Desktop breakpoint (matches your CSS @media query)
-  const DESKTOP_BREAKPOINT = 900;
-
-  // YouTube API callback
-  window.onYouTubeIframeAPIReady = function() {
-    ytPlayer = new YT.Player('yt-player', {
-      height: '1',
-      width: '1',
-      videoId: 'B9synWjqBn8', // ✅ NEW VIDEO ID
-      playerVars: {
-        'autoplay': 0,
-        'controls': 0,
-        'disablekb': 1,
-        'fs': 0,
-        'loop': 1,
-        'playlist': 'B9synWjqBn8', // Required for looping
-        'modestbranding': 1,
-        'rel': 0,
-        'iv_load_policy': 3
-      },
-      events: {
-        'onReady': onPlayerReady,
-        'onStateChange': onPlayerStateChange
-      }
-    });
-  };
-
-  function onPlayerReady(event) {
-    // Player ready - wait for trigger
-  }
-
-  function onPlayerStateChange(event) {
-    if (event.data === YT.PlayerState.ENDED) {
-      ytPlayer.playVideo(); // Fallback loop
-    }
-  }
-
-  function startBackgroundMusic() {
-    if (musicStarted || !ytPlayer) return;
+  function initBackgroundMusic() {
+    bgMusic = document.getElementById('bg-music');
+    if (!bgMusic) return;
     
-    ytPlayer.playVideo();
-    ytPlayer.unMute();
-    musicStarted = true;
+    // 1. Start playing immediately (muted autoplay is allowed by all browsers)
+    bgMusic.play().catch(err => console.warn('Muted autoplay failed:', err));
     
-    // Update toggle button state
-    if (musicToggleBtn) {
-      musicToggleBtn.classList.remove('muted');
-      musicToggleBtn.querySelector('span').textContent = 'Music: On';
-    }
-    
-    // Remove scroll listener after trigger (desktop)
-    if (window.innerWidth >= DESKTOP_BREAKPOINT) {
-      window.removeEventListener('scroll', handleScrollTrigger, { passive: true });
-    }
-  }
-
-  // Debounced scroll handler for desktop trigger
-  function handleScrollTrigger() {
-    if (window.innerWidth < DESKTOP_BREAKPOINT) return;
-    if (scrollTriggered || musicStarted) return;
-    
-    // Debounce: only trigger after 500ms of continuous scrolling
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-      if (window.scrollY > 50) { // Only trigger after scrolling down a bit
-        scrollTriggered = true;
-        startBackgroundMusic();
-      }
-    }, 500);
-  }
-
-  // Mobile fallback: click/touch to start music
-  function setupMobileFallback() {
-    if (window.innerWidth < DESKTOP_BREAKPOINT) {
-      ['click', 'touchstart'].forEach(evt => {
-        document.addEventListener(evt, startBackgroundMusic, { passive: true, once: true });
-      });
-    }
-  }
-
-  // Create music toggle button
-  function createMusicToggle() {
-    musicToggleBtn = document.createElement('button');
-    musicToggleBtn.id = 'music-toggle';
-    musicToggleBtn.className = 'magnetic';
-    musicToggleBtn.innerHTML = '<i data-lucide="music" style="width:14px;height:14px"></i><span>Music: On</span>';
-    musicToggleBtn.setAttribute('aria-label', 'Toggle background music');
-    
-    musicToggleBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (!ytPlayer) return;
+    // 2. Unmute on first user interaction
+    function unmuteAudio() {
+      if (hasUnmuted || !bgMusic) return;
       
-      const state = ytPlayer.getPlayerState();
-      if (state === YT.PlayerState.PLAYING) {
-        if (ytPlayer.isMuted()) {
-          ytPlayer.unMute();
+      bgMusic.muted = false;
+      bgMusic.volume = 1.0;
+      hasUnmuted = true;
+      
+      // Update toggle button UI
+      if (musicToggleBtn) {
+        musicToggleBtn.classList.remove('muted');
+        musicToggleBtn.querySelector('span').textContent = 'Music: On';
+      }
+      
+      // Clean up listeners
+      ['click', 'touchstart', 'keydown', 'scroll'].forEach(evt => {
+        document.removeEventListener(evt, unmuteAudio, { passive: true });
+      });
+      
+      console.log('🔊 Background music unmuted');
+    }
+    
+    // Attach interaction listeners
+    ['click', 'touchstart', 'keydown', 'scroll'].forEach(evt => {
+      document.addEventListener(evt, unmuteAudio, { passive: true });
+    });
+    
+    // 3. Toggle button logic
+    function createMusicToggle() {
+      musicToggleBtn = document.createElement('button');
+      musicToggleBtn.id = 'music-toggle';
+      musicToggleBtn.className = 'magnetic';
+      musicToggleBtn.innerHTML = '<i data-lucide="music" style="width:14px;height:14px"></i><span>Music: Off (Scroll/Click to enable)</span>';
+      musicToggleBtn.setAttribute('aria-label', 'Toggle background music');
+      
+      musicToggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!bgMusic) return;
+        
+        if (bgMusic.paused || bgMusic.ended) {
+          // Start playing if paused
+          bgMusic.play().catch(() => {});
+          bgMusic.muted = false;
           musicToggleBtn.classList.remove('muted');
           musicToggleBtn.querySelector('span').textContent = 'Music: On';
+          hasUnmuted = true;
+        } else if (bgMusic.muted) {
+          // Unmute
+          bgMusic.muted = false;
+          musicToggleBtn.classList.remove('muted');
+          musicToggleBtn.querySelector('span').textContent = 'Music: On';
+          hasUnmuted = true;
         } else {
-          ytPlayer.mute();
+          // Mute
+          bgMusic.muted = true;
           musicToggleBtn.classList.add('muted');
           musicToggleBtn.querySelector('span').textContent = 'Music: Off';
         }
-      } else {
-        // If not playing, start it
-        ytPlayer.playVideo();
-        ytPlayer.unMute();
-        musicToggleBtn.classList.remove('muted');
-        musicToggleBtn.querySelector('span').textContent = 'Music: On';
-        if (!musicStarted) {
-          musicStarted = true;
-          if (window.innerWidth >= DESKTOP_BREAKPOINT) {
-            window.removeEventListener('scroll', handleScrollTrigger, { passive: true });
-          }
-        }
-      }
-    });
-    
-    document.body.appendChild(musicToggleBtn);
-    // Re-initialize icons for the new button
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-      lucide.createIcons();
-    }
-  }
-
-  // Setup event listeners based on device
-  function setupMusicTriggers() {
-    if (window.innerWidth >= DESKTOP_BREAKPOINT) {
-      // Desktop: scroll trigger
-      window.addEventListener('scroll', handleScrollTrigger, { passive: true });
-    } else {
-      // Mobile: click/touch fallback
-      setupMobileFallback();
-    }
-  }
-
-  // Handle window resize (in case user resizes browser)
-  let resizeTimeout;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      if (musicStarted) return; // Don't re-setup if already started
-      
-      // Clear existing listeners
-      window.removeEventListener('scroll', handleScrollTrigger, { passive: true });
-      ['click', 'touchstart'].forEach(evt => {
-        document.removeEventListener(evt, startBackgroundMusic, { passive: true });
       });
       
-      // Re-setup based on new width
-      setupMusicTriggers();
-    }, 250);
-  });
-
-  // Initialize
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      createMusicToggle();
-      setupMusicTriggers();
-    });
-  } else {
+      document.body.appendChild(musicToggleBtn);
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+    
     createMusicToggle();
-    setupMusicTriggers();
   }
 
-  // Handle YouTube API load timing
-  if (typeof YT !== 'undefined' && YT.Player) {
-    if (window.onYouTubeIframeAPIReady) {
-      window.onYouTubeIframeAPIReady();
-    }
+  // Initialize after DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBackgroundMusic);
+  } else {
+    initBackgroundMusic();
   }
 
 })();
