@@ -1264,11 +1264,9 @@ section {
 <div id="yt-music-control" style="position:fixed;bottom:2rem;right:2rem;z-index:10000;display:flex;align-items:center;gap:0.75rem;">
   <button id="yt-music-toggle" class="btn-outline" style="padding:0.6rem 1rem;font-size:0.7rem;" aria-label="Toggle background music">
     <i data-lucide="music" id="yt-music-icon" style="width:14px;height:14px"></i>
-    <span id="yt-music-status" style="margin-left:0.5rem">Music Off</span>
+    <span id="yt-music-status" style="margin-left:0.5rem">Loading...</span>
   </button>
 </div>
-
-<!-- Hidden YouTube Player Container -->
 <div id="yt-player" style="position:fixed;bottom:-100px;right:-100px;opacity:0;pointer-events:none;z-index:-1;"></div>
 
 <!-- ══════════════════════════════════════════════
@@ -1464,20 +1462,13 @@ section {
 
   function updateNav() {
     const currentScrollY = window.scrollY || document.documentElement.scrollTop;
-    
-    // If near the top of the page, always show
     if (currentScrollY < 10) {
       nav.classList.remove('nav-hidden');
-    }
-    // Scrolling down → hide nav
-    else if (currentScrollY > lastScrollY + scrollThreshold) {
+    } else if (currentScrollY > lastScrollY + scrollThreshold) {
       nav.classList.add('nav-hidden');
-    }
-    // Scrolling up → show nav
-    else if (currentScrollY < lastScrollY - scrollThreshold) {
+    } else if (currentScrollY < lastScrollY - scrollThreshold) {
       nav.classList.remove('nav-hidden');
     }
-
     lastScrollY = currentScrollY;
     ticking = false;
   }
@@ -1500,10 +1491,8 @@ section {
     if (count >= 100) {
       count = 100;
       clearInterval(loaderInterval);
-
       counter.textContent = '100';
       loaderBar.style.width = '100%';
-
       setTimeout(() => {
         gsap.to(loader, {
           yPercent: -100,
@@ -1537,234 +1526,86 @@ section {
   // ═══════════ HERO ANIMATIONS ═══════════
   function animateHero() {
     const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-
     tl.to('.nav', { opacity: 1, duration: 1 })
       .to('.hero-eyebrow-inner', { y: 0, duration: 1.2 }, '-=0.6')
-      .to('.hero-title .line-inner', {
-        y: 0,
-        duration: 1.4,
-        stagger: 0.1
-      }, '-=0.8')
-      .to('.hero-subtitle', {
-        opacity: 1,
-        y: 0,
-        duration: 1
-      }, '-=0.6')
-      .to('.hero-cta-group', {
-        opacity: 1,
-        y: 0,
-        duration: 1
-      }, '-=0.6')
-      .to('.hero-scroll-indicator', {
-        opacity: 1,
-        duration: 1
-      }, '-=0.4');
+      .to('.hero-title .line-inner', { y: 0, duration: 1.4, stagger: 0.1 }, '-=0.8')
+      .to('.hero-subtitle', { opacity: 1, y: 0, duration: 1 }, '-=0.6')
+      .to('.hero-cta-group', { opacity: 1, y: 0, duration: 1 }, '-=0.6')
+      .to('.hero-scroll-indicator', { opacity: 1, duration: 1 }, '-=0.4');
   }
 
   // ═══════════ SCROLL ANIMATIONS ═══════════
+  gsap.from('.about-image', { scrollTrigger: { trigger: '.about', start: 'top 75%' }, scale: 0.7, opacity: 0, duration: 1.2, ease: 'power3.out' });
+  gsap.from('.about-image-glow', { scrollTrigger: { trigger: '.about', start: 'top 75%' }, scale: 0.5, opacity: 0, duration: 1.4, ease: 'power3.out' });
+  gsap.from('.about-text', { scrollTrigger: { trigger: '.about', start: 'top 70%' }, y: 60, opacity: 0, duration: 1.2, delay: 0.2, ease: 'power3.out' });
 
-  gsap.from('.about-image', {
-    scrollTrigger: {
-      trigger: '.about',
-      start: 'top 75%'
-    },
-    scale: 0.7,
-    opacity: 0,
-    duration: 1.2,
-    ease: 'power3.out'
-  });
-
-  gsap.from('.about-image-glow', {
-    scrollTrigger: {
-      trigger: '.about',
-      start: 'top 75%'
-    },
-    scale: 0.5,
-    opacity: 0,
-    duration: 1.4,
-    ease: 'power3.out'
-  });
-
-  gsap.from('.about-text', {
-    scrollTrigger: {
-      trigger: '.about',
-      start: 'top 70%'
-    },
-    y: 60,
-    opacity: 0,
-    duration: 1.2,
-    delay: 0.2,
-    ease: 'power3.out'
-  });
-
-  // Stat counters with custom suffix support
   const statNumbers = document.querySelectorAll('.stat-number');
   statNumbers.forEach(stat => {
     const target = parseFloat(stat.dataset.count);
-    const suffix = stat.dataset.suffix || '+'; // Default to '+' if no suffix specified
-    
+    const suffix = stat.dataset.suffix || '+';
     ScrollTrigger.create({
       trigger: stat,
       start: 'top 85%',
       onEnter: () => {
         gsap.to(stat, {
-          innerText: target,
-          duration: 2,
-          snap: { innerText: 1 },
-          ease: 'power2.out',
+          innerText: target, duration: 2, snap: { innerText: 1 }, ease: 'power2.out',
           onUpdate: function() {
             const val = parseFloat(stat.textContent);
-            // Format: if decimal exists in data-count, show 1 decimal, else round
-            const formatted = stat.dataset.count.includes('.') ? val.toFixed(1) : Math.round(val);
-            stat.textContent = formatted + suffix;
+            stat.textContent = (stat.dataset.count.includes('.') ? val.toFixed(1) : Math.round(val)) + suffix;
           }
         });
-      },
-      once: true
+      }, once: true
     });
   });
 
   gsap.utils.toArray('.expertise-card').forEach((card, i) => {
-    gsap.to(card, {
-      scrollTrigger: {
-        trigger: card,
-        start: 'top 85%',
-        once: true
-      },
-      opacity: 1,
-      y: 0,
-      duration: 0.8,
-      delay: i * 0.1,
-      ease: 'power3.out'
-    });
+    gsap.to(card, { scrollTrigger: { trigger: card, start: 'top 85%', once: true }, opacity: 1, y: 0, duration: 0.8, delay: i * 0.1, ease: 'power3.out' });
   });
 
   gsap.utils.toArray('.project-item').forEach((item, i) => {
     const img = item.querySelector('.project-image');
     const info = item.querySelector('.project-info');
-
-    gsap.to(item, {
-      scrollTrigger: {
-        trigger: item,
-        start: 'top 80%',
-        once: true
-      },
-      opacity: 1,
-      duration: 1,
-      ease: 'power3.out'
-    });
-
-    gsap.from(img, {
-      scrollTrigger: {
-        trigger: item,
-        start: 'top 80%',
-        end: 'top 20%',
-        scrub: 1
-      },
-      scale: 1.15,
-      y: 30
-    });
-
-    gsap.from(info, {
-      scrollTrigger: {
-        trigger: item,
-        start: 'top 70%'
-      },
-      x: i % 2 === 0 ? 40 : -40,
-      opacity: 0,
-      duration: 1,
-      ease: 'power3.out'
-    });
+    gsap.to(item, { scrollTrigger: { trigger: item, start: 'top 80%', once: true }, opacity: 1, duration: 1, ease: 'power3.out' });
+    gsap.from(img, { scrollTrigger: { trigger: item, start: 'top 80%', end: 'top 20%', scrub: 1 }, scale: 1.15, y: 30 });
+    gsap.from(info, { scrollTrigger: { trigger: item, start: 'top 70%' }, x: i % 2 === 0 ? 40 : -40, opacity: 0, duration: 1, ease: 'power3.out' });
   });
 
   gsap.utils.toArray('.testimonial-card').forEach((card, i) => {
-    gsap.to(card, {
-      scrollTrigger: {
-        trigger: card,
-        start: 'top 85%',
-        once: true
-      },
-      opacity: 1,
-      y: 0,
-      duration: 0.8,
-      delay: i * 0.15,
-      ease: 'power3.out'
-    });
+    gsap.to(card, { scrollTrigger: { trigger: card, start: 'top 85%', once: true }, opacity: 1, y: 0, duration: 0.8, delay: i * 0.15, ease: 'power3.out' });
   });
 
-  gsap.from('.contact-heading', {
-    scrollTrigger: {
-      trigger: '.contact',
-      start: 'top 70%'
-    },
-    y: 60,
-    opacity: 0,
-    duration: 1,
-    ease: 'power3.out'
-  });
-
-  gsap.from('.contact-form', {
-    scrollTrigger: {
-      trigger: '.contact-form',
-      start: 'top 80%'
-    },
-    y: 40,
-    opacity: 0,
-    duration: 1,
-    delay: 0.3,
-    ease: 'power3.out'
-  });
+  gsap.from('.contact-heading', { scrollTrigger: { trigger: '.contact', start: 'top 70%' }, y: 60, opacity: 0, duration: 1, ease: 'power3.out' });
+  gsap.from('.contact-form', { scrollTrigger: { trigger: '.contact-form', start: 'top 80%' }, y: 40, opacity: 0, duration: 1, delay: 0.3, ease: 'power3.out' });
 
   gsap.utils.toArray('.section-label').forEach(label => {
-    gsap.from(label, {
-      scrollTrigger: {
-        trigger: label,
-        start: 'top 85%'
-      },
-      x: -30,
-      opacity: 0,
-      duration: 0.8,
-      ease: 'power3.out'
-    });
+    gsap.from(label, { scrollTrigger: { trigger: label, start: 'top 85%' }, x: -30, opacity: 0, duration: 0.8, ease: 'power3.out' });
   });
 
   gsap.utils.toArray('.section-title').forEach(title => {
     const split = new SplitType(title, { types: 'words' });
-    gsap.from(split.words, {
-      scrollTrigger: {
-        trigger: title,
-        start: 'top 80%'
-      },
-      y: 40,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.05,
-      ease: 'power3.out'
-    });
+    gsap.from(split.words, { scrollTrigger: { trigger: title, start: 'top 80%' }, y: 40, opacity: 0, duration: 0.8, stagger: 0.05, ease: 'power3.out' });
   });
 
-  document.querySelector('.footer-back-top').addEventListener('click', (e) => {
-    e.preventDefault();
-    lenis.scrollTo(0);
-  });
-
+  document.querySelector('.footer-back-top').addEventListener('click', (e) => { e.preventDefault(); lenis.scrollTo(0); });
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
       e.preventDefault();
       const target = document.querySelector(this.getAttribute('href'));
-      if (target) {
-        lenis.scrollTo(target, { offset: -80 });
-      }
+      if (target) lenis.scrollTo(target, { offset: -80 });
     });
   });
 
   lucide.createIcons();
 
-  // ═══════════ YOUTUBE BACKGROUND MUSIC ═══════════
+  // ═══════════ YOUTUBE BACKGROUND MUSIC (AUTOPLAY ATTEMPT) ═══════════
   (function setupYouTubeMusic() {
-    const videoId = '6ONRf7h3Mdk'; // Extracted from your URL
+    const videoId = '6ONRf7h3Mdk';
     let player = null;
     let isPlaying = false;
+    
+    const toggleBtn = document.getElementById('yt-music-toggle');
+    const musicIcon = document.getElementById('yt-music-icon');
+    const musicStatus = document.getElementById('yt-music-status');
     
     // Load YouTube IFrame API
     const tag = document.createElement('script');
@@ -1772,25 +1613,12 @@ section {
     const firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     
-    const toggleBtn = document.getElementById('yt-music-toggle');
-    const musicIcon = document.getElementById('yt-music-icon');
-    const musicStatus = document.getElementById('yt-music-status');
-    
     window.onYouTubeIframeAPIReady = function() {
       player = new YT.Player('yt-player', {
-        height: '1',
-        width: '1',
-        videoId: videoId,
+        height: '1', width: '1', videoId: videoId,
         playerVars: {
-          'autoplay': 0,
-          'controls': 0,
-          'disablekb': 1,
-          'fs': 0,
-          'loop': 1,
-          'modestbranding': 1,
-          'playsinline': 1,
-          'rel': 0,
-          'iv_load_policy': 3
+          'autoplay': 1, 'controls': 0, 'disablekb': 1, 'fs': 0, 'loop': 1,
+          'modestbranding': 1, 'playsinline': 1, 'rel': 0, 'iv_load_policy': 3, 'enablejsapi': 1
         },
         events: {
           'onReady': onPlayerReady,
@@ -1800,39 +1628,53 @@ section {
     };
     
     function onPlayerReady(event) {
-      // Player ready - update UI
-      toggleBtn.disabled = false;
+      console.log('🎵 Player ready');
+      event.target.setVolume(30);
+      
+      // Attempt autoplay immediately
+      try {
+        event.target.playVideo();
+        updateUI(true, 'Music On');
+      } catch (e) {
+        // Browser blocked autoplay
+        console.warn('⚠️ Autoplay blocked by browser. Waiting for first interaction...');
+        updateUI(false, 'Click to Play');
+        
+        // Listen for first user interaction (click, scroll, keypress)
+        function enableOnInteraction() {
+          try { player.playVideo(); updateUI(true, 'Music On'); } catch(err) {}
+          window.removeEventListener('click', enableOnInteraction);
+          window.removeEventListener('keydown', enableOnInteraction);
+          window.removeEventListener('touchstart', enableOnInteraction);
+        }
+        window.addEventListener('click', enableOnInteraction, { once: true });
+        window.addEventListener('keydown', enableOnInteraction, { once: true });
+        window.addEventListener('touchstart', enableOnInteraction, { once: true });
+      }
     }
     
     function onPlayerStateChange(event) {
       if (event.data === YT.PlayerState.PLAYING) {
-        isPlaying = true;
-        musicStatus.textContent = 'Music On';
-        musicIcon.setAttribute('data-lucide', 'music');
+        isPlaying = true; musicStatus.textContent = 'Music On'; musicIcon.setAttribute('data-lucide', 'music');
         if (typeof lucide !== 'undefined') lucide.createIcons();
-        player.setVolume(30); // Keep it subtle (0-100)
       } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-        isPlaying = false;
-        musicStatus.textContent = 'Music Off';
-        musicIcon.setAttribute('data-lucide', 'music-off');
+        isPlaying = false; musicStatus.textContent = 'Music Off'; musicIcon.setAttribute('data-lucide', 'music-off');
         if (typeof lucide !== 'undefined') lucide.createIcons();
       }
+    }
+    
+    function updateUI(playing, statusText) {
+      isPlaying = playing; musicStatus.textContent = statusText;
+      musicIcon.setAttribute('data-lucide', playing ? 'music' : 'music-off');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
     
     toggleBtn.addEventListener('click', () => {
       if (!player || !player.playVideo) return;
-      
-      if (isPlaying) {
-        player.pauseVideo();
-      } else {
-        player.playVideo();
-      }
+      isPlaying ? player.pauseVideo() : player.playVideo();
     });
     
-    // Update icons after DOM changes
-    if (typeof lucide !== 'undefined') {
-      setTimeout(() => lucide.createIcons(), 100);
-    }
+    if (typeof lucide !== 'undefined') setTimeout(() => lucide.createIcons(), 100);
   })();
 
 })();
