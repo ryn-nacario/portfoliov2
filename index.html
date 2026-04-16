@@ -1260,6 +1260,17 @@ section {
   <a href="#" class="footer-back-top magnetic">Back to Top <i data-lucide="arrow-up" style="width:12px;height:12px"></i></a>
 </footer>
 
+<!-- ═══════════════ YOUTUBE BACKGROUND MUSIC ═══════════════ -->
+<div id="yt-music-control" style="position:fixed;bottom:2rem;right:2rem;z-index:10000;display:flex;align-items:center;gap:0.75rem;">
+  <button id="yt-music-toggle" class="btn-outline" style="padding:0.6rem 1rem;font-size:0.7rem;" aria-label="Toggle background music">
+    <i data-lucide="music" id="yt-music-icon" style="width:14px;height:14px"></i>
+    <span id="yt-music-status" style="margin-left:0.5rem">Music Off</span>
+  </button>
+</div>
+
+<!-- Hidden YouTube Player Container -->
+<div id="yt-player" style="position:fixed;bottom:-100px;right:-100px;opacity:0;pointer-events:none;z-index:-1;"></div>
+
 <!-- ══════════════════════════════════════════════
      JAVASCRIPT
      ══════════════════════════════════════════════ -->
@@ -1748,6 +1759,81 @@ section {
   });
 
   lucide.createIcons();
+
+  // ═══════════ YOUTUBE BACKGROUND MUSIC ═══════════
+  (function setupYouTubeMusic() {
+    const videoId = '6ONRf7h3Mdk'; // Extracted from your URL
+    let player = null;
+    let isPlaying = false;
+    
+    // Load YouTube IFrame API
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    
+    const toggleBtn = document.getElementById('yt-music-toggle');
+    const musicIcon = document.getElementById('yt-music-icon');
+    const musicStatus = document.getElementById('yt-music-status');
+    
+    window.onYouTubeIframeAPIReady = function() {
+      player = new YT.Player('yt-player', {
+        height: '1',
+        width: '1',
+        videoId: videoId,
+        playerVars: {
+          'autoplay': 0,
+          'controls': 0,
+          'disablekb': 1,
+          'fs': 0,
+          'loop': 1,
+          'modestbranding': 1,
+          'playsinline': 1,
+          'rel': 0,
+          'iv_load_policy': 3
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    };
+    
+    function onPlayerReady(event) {
+      // Player ready - update UI
+      toggleBtn.disabled = false;
+    }
+    
+    function onPlayerStateChange(event) {
+      if (event.data === YT.PlayerState.PLAYING) {
+        isPlaying = true;
+        musicStatus.textContent = 'Music On';
+        musicIcon.setAttribute('data-lucide', 'music');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        player.setVolume(30); // Keep it subtle (0-100)
+      } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+        isPlaying = false;
+        musicStatus.textContent = 'Music Off';
+        musicIcon.setAttribute('data-lucide', 'music-off');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      }
+    }
+    
+    toggleBtn.addEventListener('click', () => {
+      if (!player || !player.playVideo) return;
+      
+      if (isPlaying) {
+        player.pauseVideo();
+      } else {
+        player.playVideo();
+      }
+    });
+    
+    // Update icons after DOM changes
+    if (typeof lucide !== 'undefined') {
+      setTimeout(() => lucide.createIcons(), 100);
+    }
+  })();
 
 })();
 </script>
