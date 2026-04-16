@@ -1597,7 +1597,7 @@ section {
 
   lucide.createIcons();
 
-  // ═══════════ YOUTUBE BACKGROUND MUSIC (AUTOPLAY ATTEMPT) ═══════════
+  // ═══════════ YOUTUBE BACKGROUND MUSIC (LOOP ENABLED) ═══════════
   (function setupYouTubeMusic() {
     const videoId = '6ONRf7h3Mdk';
     let player = null;
@@ -1607,7 +1607,6 @@ section {
     const musicIcon = document.getElementById('yt-music-icon');
     const musicStatus = document.getElementById('yt-music-status');
     
-    // Load YouTube IFrame API
     const tag = document.createElement('script');
     tag.src = 'https://www.youtube.com/iframe_api';
     const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -1617,8 +1616,17 @@ section {
       player = new YT.Player('yt-player', {
         height: '1', width: '1', videoId: videoId,
         playerVars: {
-          'autoplay': 1, 'controls': 0, 'disablekb': 1, 'fs': 0, 'loop': 1,
-          'modestbranding': 1, 'playsinline': 1, 'rel': 0, 'iv_load_policy': 3, 'enablejsapi': 1
+          'autoplay': 1, 
+          'controls': 0, 
+          'disablekb': 1, 
+          'fs': 0, 
+          'loop': 1, 
+          'playlist': videoId, // 🔑 REQUIRED FOR LOOPING TO WORK
+          'modestbranding': 1, 
+          'playsinline': 1, 
+          'rel': 0, 
+          'iv_load_policy': 3, 
+          'enablejsapi': 1
         },
         events: {
           'onReady': onPlayerReady,
@@ -1631,16 +1639,13 @@ section {
       console.log('🎵 Player ready');
       event.target.setVolume(30);
       
-      // Attempt autoplay immediately
       try {
         event.target.playVideo();
         updateUI(true, 'Music On');
       } catch (e) {
-        // Browser blocked autoplay
-        console.warn('⚠️ Autoplay blocked by browser. Waiting for first interaction...');
+        console.warn('⚠️ Autoplay blocked. Waiting for interaction...');
         updateUI(false, 'Click to Play');
         
-        // Listen for first user interaction (click, scroll, keypress)
         function enableOnInteraction() {
           try { player.playVideo(); updateUI(true, 'Music On'); } catch(err) {}
           window.removeEventListener('click', enableOnInteraction);
@@ -1655,16 +1660,21 @@ section {
     
     function onPlayerStateChange(event) {
       if (event.data === YT.PlayerState.PLAYING) {
-        isPlaying = true; musicStatus.textContent = 'Music On'; musicIcon.setAttribute('data-lucide', 'music');
+        isPlaying = true; 
+        musicStatus.textContent = 'Music On'; 
+        musicIcon.setAttribute('data-lucide', 'music');
         if (typeof lucide !== 'undefined') lucide.createIcons();
       } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-        isPlaying = false; musicStatus.textContent = 'Music Off'; musicIcon.setAttribute('data-lucide', 'music-off');
+        isPlaying = false; 
+        musicStatus.textContent = 'Music Off'; 
+        musicIcon.setAttribute('data-lucide', 'music-off');
         if (typeof lucide !== 'undefined') lucide.createIcons();
       }
     }
     
     function updateUI(playing, statusText) {
-      isPlaying = playing; musicStatus.textContent = statusText;
+      isPlaying = playing; 
+      musicStatus.textContent = statusText;
       musicIcon.setAttribute('data-lucide', playing ? 'music' : 'music-off');
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
