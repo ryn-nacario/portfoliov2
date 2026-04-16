@@ -1493,16 +1493,11 @@ section {
   function updateNav() {
     const currentScrollY = window.scrollY || document.documentElement.scrollTop;
     
-    // If near the top of the page, always show
     if (currentScrollY < 10) {
       nav.classList.remove('nav-hidden');
-    }
-    // Scrolling down → hide nav
-    else if (currentScrollY > lastScrollY + scrollThreshold) {
+    } else if (currentScrollY > lastScrollY + scrollThreshold) {
       nav.classList.add('nav-hidden');
-    }
-    // Scrolling up → show nav
-    else if (currentScrollY < lastScrollY - scrollThreshold) {
+    } else if (currentScrollY < lastScrollY - scrollThreshold) {
       nav.classList.remove('nav-hidden');
     }
 
@@ -1528,10 +1523,8 @@ section {
     if (count >= 100) {
       count = 100;
       clearInterval(loaderInterval);
-
       counter.textContent = '100';
       loaderBar.style.width = '100%';
-
       setTimeout(() => {
         gsap.to(loader, {
           yPercent: -100,
@@ -1565,72 +1558,23 @@ section {
   // ═══════════ HERO ANIMATIONS ═══════════
   function animateHero() {
     const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-
     tl.to('.nav', { opacity: 1, duration: 1 })
       .to('.hero-eyebrow-inner', { y: 0, duration: 1.2 }, '-=0.6')
-      .to('.hero-title .line-inner', {
-        y: 0,
-        duration: 1.4,
-        stagger: 0.1
-      }, '-=0.8')
-      .to('.hero-subtitle', {
-        opacity: 1,
-        y: 0,
-        duration: 1
-      }, '-=0.6')
-      .to('.hero-cta-group', {
-        opacity: 1,
-        y: 0,
-        duration: 1
-      }, '-=0.6')
-      .to('.hero-scroll-indicator', {
-        opacity: 1,
-        duration: 1
-      }, '-=0.4');
+      .to('.hero-title .line-inner', { y: 0, duration: 1.4, stagger: 0.1 }, '-=0.8')
+      .to('.hero-subtitle', { opacity: 1, y: 0, duration: 1 }, '-=0.6')
+      .to('.hero-cta-group', { opacity: 1, y: 0, duration: 1 }, '-=0.6')
+      .to('.hero-scroll-indicator', { opacity: 1, duration: 1 }, '-=0.4');
   }
 
   // ═══════════ SCROLL ANIMATIONS ═══════════
+  gsap.from('.about-image', { scrollTrigger: { trigger: '.about', start: 'top 75%' }, scale: 0.7, opacity: 0, duration: 1.2, ease: 'power3.out' });
+  gsap.from('.about-image-glow', { scrollTrigger: { trigger: '.about', start: 'top 75%' }, scale: 0.5, opacity: 0, duration: 1.4, ease: 'power3.out' });
+  gsap.from('.about-text', { scrollTrigger: { trigger: '.about', start: 'top 70%' }, y: 60, opacity: 0, duration: 1.2, delay: 0.2, ease: 'power3.out' });
 
-  gsap.from('.about-image', {
-    scrollTrigger: {
-      trigger: '.about',
-      start: 'top 75%'
-    },
-    scale: 0.7,
-    opacity: 0,
-    duration: 1.2,
-    ease: 'power3.out'
-  });
-
-  gsap.from('.about-image-glow', {
-    scrollTrigger: {
-      trigger: '.about',
-      start: 'top 75%'
-    },
-    scale: 0.5,
-    opacity: 0,
-    duration: 1.4,
-    ease: 'power3.out'
-  });
-
-  gsap.from('.about-text', {
-    scrollTrigger: {
-      trigger: '.about',
-      start: 'top 70%'
-    },
-    y: 60,
-    opacity: 0,
-    duration: 1.2,
-    delay: 0.2,
-    ease: 'power3.out'
-  });
-
-  // Stat counters with custom suffix support
   const statNumbers = document.querySelectorAll('.stat-number');
   statNumbers.forEach(stat => {
     const target = parseFloat(stat.dataset.count);
-    const suffix = stat.dataset.suffix || '+'; // Default to '+' if no suffix specified
-    
+    const suffix = stat.dataset.suffix || '+';
     ScrollTrigger.create({
       trigger: stat,
       start: 'top 85%',
@@ -1642,7 +1586,6 @@ section {
           ease: 'power2.out',
           onUpdate: function() {
             const val = parseFloat(stat.textContent);
-            // Format: if decimal exists in data-count, show 1 decimal, else round
             const formatted = stat.dataset.count.includes('.') ? val.toFixed(1) : Math.round(val);
             stat.textContent = formatted + suffix;
           }
@@ -1653,186 +1596,121 @@ section {
   });
 
   gsap.utils.toArray('.expertise-card').forEach((card, i) => {
-    gsap.to(card, {
-      scrollTrigger: {
-        trigger: card,
-        start: 'top 85%',
-        once: true
-      },
-      opacity: 1,
-      y: 0,
-      duration: 0.8,
-      delay: i * 0.1,
-      ease: 'power3.out'
-    });
+    gsap.to(card, { scrollTrigger: { trigger: card, start: 'top 85%', once: true }, opacity: 1, y: 0, duration: 0.8, delay: i * 0.1, ease: 'power3.out' });
   });
 
   gsap.utils.toArray('.project-item').forEach((item, i) => {
     const img = item.querySelector('.project-image');
     const info = item.querySelector('.project-info');
-
-    gsap.to(item, {
-      scrollTrigger: {
-        trigger: item,
-        start: 'top 80%',
-        once: true
-      },
-      opacity: 1,
-      duration: 1,
-      ease: 'power3.out'
-    });
-
-    gsap.from(img, {
-      scrollTrigger: {
-        trigger: item,
-        start: 'top 80%',
-        end: 'top 20%',
-        scrub: 1
-      },
-      scale: 1.15,
-      y: 30
-    });
-
-    gsap.from(info, {
-      scrollTrigger: {
-        trigger: item,
-        start: 'top 70%'
-      },
-      x: i % 2 === 0 ? 40 : -40,
-      opacity: 0,
-      duration: 1,
-      ease: 'power3.out'
-    });
+    gsap.to(item, { scrollTrigger: { trigger: item, start: 'top 80%', once: true }, opacity: 1, duration: 1, ease: 'power3.out' });
+    gsap.from(img, { scrollTrigger: { trigger: item, start: 'top 80%', end: 'top 20%', scrub: 1 }, scale: 1.15, y: 30 });
+    gsap.from(info, { scrollTrigger: { trigger: item, start: 'top 70%' }, x: i % 2 === 0 ? 40 : -40, opacity: 0, duration: 1, ease: 'power3.out' });
   });
 
   gsap.utils.toArray('.testimonial-card').forEach((card, i) => {
-    gsap.to(card, {
-      scrollTrigger: {
-        trigger: card,
-        start: 'top 85%',
-        once: true
-      },
-      opacity: 1,
-      y: 0,
-      duration: 0.8,
-      delay: i * 0.15,
-      ease: 'power3.out'
-    });
+    gsap.to(card, { scrollTrigger: { trigger: card, start: 'top 85%', once: true }, opacity: 1, y: 0, duration: 0.8, delay: i * 0.15, ease: 'power3.out' });
   });
 
-  gsap.from('.contact-heading', {
-    scrollTrigger: {
-      trigger: '.contact',
-      start: 'top 70%'
-    },
-    y: 60,
-    opacity: 0,
-    duration: 1,
-    ease: 'power3.out'
-  });
-
-  gsap.from('.contact-form', {
-    scrollTrigger: {
-      trigger: '.contact-form',
-      start: 'top 80%'
-    },
-    y: 40,
-    opacity: 0,
-    duration: 1,
-    delay: 0.3,
-    ease: 'power3.out'
-  });
-
+  gsap.from('.contact-heading', { scrollTrigger: { trigger: '.contact', start: 'top 70%' }, y: 60, opacity: 0, duration: 1, ease: 'power3.out' });
+  gsap.from('.contact-form', { scrollTrigger: { trigger: '.contact-form', start: 'top 80%' }, y: 40, opacity: 0, duration: 1, delay: 0.3, ease: 'power3.out' });
   gsap.utils.toArray('.section-label').forEach(label => {
-    gsap.from(label, {
-      scrollTrigger: {
-        trigger: label,
-        start: 'top 85%'
-      },
-      x: -30,
-      opacity: 0,
-      duration: 0.8,
-      ease: 'power3.out'
-    });
+    gsap.from(label, { scrollTrigger: { trigger: label, start: 'top 85%' }, x: -30, opacity: 0, duration: 0.8, ease: 'power3.out' });
   });
-
   gsap.utils.toArray('.section-title').forEach(title => {
     const split = new SplitType(title, { types: 'words' });
-    gsap.from(split.words, {
-      scrollTrigger: {
-        trigger: title,
-        start: 'top 80%'
-      },
-      y: 40,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.05,
-      ease: 'power3.out'
-    });
+    gsap.from(split.words, { scrollTrigger: { trigger: title, start: 'top 80%' }, y: 40, opacity: 0, duration: 0.8, stagger: 0.05, ease: 'power3.out' });
   });
 
-  document.querySelector('.footer-back-top').addEventListener('click', (e) => {
-    e.preventDefault();
-    lenis.scrollTo(0);
-  });
-
+  document.querySelector('.footer-back-top').addEventListener('click', (e) => { e.preventDefault(); lenis.scrollTo(0); });
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
       e.preventDefault();
       const target = document.querySelector(this.getAttribute('href'));
-      if (target) {
-        lenis.scrollTo(target, { offset: -80 });
-      }
+      if (target) lenis.scrollTo(target, { offset: -80 });
     });
   });
 
   lucide.createIcons();
 
-  // ═══════════ HTML5 AUDIO BACKGROUND MUSIC (MUTED AUTOPLAY + UNMUTE ON INTERACTION) ═══════════
+  // ═══════════ HTML5 AUDIO BACKGROUND MUSIC (BULLETPROOF DESKTOP AUTOPLAY) ═══════════
   let bgMusic = null;
   let hasUnmuted = false;
   let musicToggleBtn = null;
+  let playAttempted = false;
 
   function initBackgroundMusic() {
     bgMusic = document.getElementById('bg-music');
     if (!bgMusic) return;
-    
-    // 1. Start playing immediately (muted autoplay is allowed by all browsers)
-    bgMusic.play().catch(err => console.warn('Muted autoplay failed:', err));
-    
-    // 2. Unmute on first user interaction
-    function unmuteAudio() {
+
+    // 1. FORCE muted state via JS (bypasses HTML attribute race conditions)
+    bgMusic.muted = true;
+    bgMusic.volume = 1.0;
+
+    // 2. Robust autoplay with ready-state checking & retry
+    function attemptAutoplay() {
+      if (playAttempted) return;
+      playAttempted = true;
+
+      bgMusic.play().then(() => {
+        console.log('✅ Background music started (muted)');
+      }).catch(err => {
+        console.warn('⚠️ Initial autoplay blocked:', err.name, err.message);
+        // Retry once after delay (handles cached/loaded race conditions)
+        setTimeout(() => {
+          if (!playAttempted || bgMusic.paused) {
+            bgMusic.play().catch(() => {
+              console.log('🔄 Still blocked. Will unmute on first interaction.');
+            });
+          }
+        }, 800);
+      });
+    }
+
+    // Wait for audio to be ready
+    if (bgMusic.readyState >= 3) {
+      attemptAutoplay();
+    } else {
+      bgMusic.addEventListener('canplay', attemptAutoplay, { once: true });
+      // Fallback timeout in case canplay never fires
+      setTimeout(attemptAutoplay, 1500);
+    }
+
+    // 3. Unmute on first user interaction
+    function unmuteOnInteraction() {
       if (hasUnmuted || !bgMusic) return;
       
+      if (bgMusic.paused) {
+        bgMusic.play().then(enableSound).catch(() => {});
+      } else {
+        enableSound();
+      }
+    }
+
+    function enableSound() {
       bgMusic.muted = false;
-      bgMusic.volume = 1.0;
       hasUnmuted = true;
       
-      // Update toggle button UI
       if (musicToggleBtn) {
         musicToggleBtn.classList.remove('muted');
         musicToggleBtn.querySelector('span').textContent = 'Music: On';
       }
       
-      // Clean up listeners
       ['click', 'touchstart', 'keydown', 'scroll'].forEach(evt => {
-        document.removeEventListener(evt, unmuteAudio, { passive: true });
+        document.removeEventListener(evt, unmuteOnInteraction, { passive: true });
       });
-      
-      console.log('🔊 Background music unmuted');
+      console.log('🔊 Sound enabled via interaction');
     }
-    
-    // Attach interaction listeners
+
     ['click', 'touchstart', 'keydown', 'scroll'].forEach(evt => {
-      document.addEventListener(evt, unmuteAudio, { passive: true });
+      document.addEventListener(evt, unmuteOnInteraction, { passive: true });
     });
-    
-    // 3. Toggle button logic
+
+    // 4. Toggle button
     function createMusicToggle() {
       musicToggleBtn = document.createElement('button');
       musicToggleBtn.id = 'music-toggle';
       musicToggleBtn.className = 'magnetic';
-      musicToggleBtn.innerHTML = '<i data-lucide="music" style="width:14px;height:14px"></i><span>Music: Off (Scroll/Click to enable)</span>';
+      musicToggleBtn.innerHTML = '<i data-lucide="music" style="width:14px;height:14px"></i><span>Music: Off</span>';
       musicToggleBtn.setAttribute('aria-label', 'Toggle background music');
       
       musicToggleBtn.addEventListener('click', (e) => {
@@ -1840,20 +1718,17 @@ section {
         if (!bgMusic) return;
         
         if (bgMusic.paused || bgMusic.ended) {
-          // Start playing if paused
           bgMusic.play().catch(() => {});
           bgMusic.muted = false;
           musicToggleBtn.classList.remove('muted');
           musicToggleBtn.querySelector('span').textContent = 'Music: On';
           hasUnmuted = true;
         } else if (bgMusic.muted) {
-          // Unmute
           bgMusic.muted = false;
           musicToggleBtn.classList.remove('muted');
           musicToggleBtn.querySelector('span').textContent = 'Music: On';
           hasUnmuted = true;
         } else {
-          // Mute
           bgMusic.muted = true;
           musicToggleBtn.classList.add('muted');
           musicToggleBtn.querySelector('span').textContent = 'Music: Off';
@@ -1865,11 +1740,10 @@ section {
         lucide.createIcons();
       }
     }
-    
+
     createMusicToggle();
   }
 
-  // Initialize after DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initBackgroundMusic);
   } else {
