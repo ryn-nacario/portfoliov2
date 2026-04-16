@@ -1632,7 +1632,7 @@ section {
 
   lucide.createIcons();
 
-  // ═══════════ HTML5 AUDIO BACKGROUND MUSIC (BULLETPROOF DESKTOP AUTOPLAY) ═══════════
+  // ═══════════ HTML5 AUDIO BACKGROUND MUSIC (30% VOLUME) ═══════════
   let bgMusic = null;
   let hasUnmuted = false;
   let musicToggleBtn = null;
@@ -1642,9 +1642,9 @@ section {
     bgMusic = document.getElementById('bg-music');
     if (!bgMusic) return;
 
-    // 1. FORCE muted state via JS (bypasses HTML attribute race conditions)
+    // 1. FORCE muted state & set volume to 30% (0.3)
     bgMusic.muted = true;
-    bgMusic.volume = 1.0;
+    bgMusic.volume = 0.3; // ✅ Volume reduced to 30%
 
     // 2. Robust autoplay with ready-state checking & retry
     function attemptAutoplay() {
@@ -1652,7 +1652,7 @@ section {
       playAttempted = true;
 
       bgMusic.play().then(() => {
-        console.log('✅ Background music started (muted)');
+        console.log('✅ Background music started (muted at 30% volume)');
       }).catch(err => {
         console.warn('⚠️ Initial autoplay blocked:', err.name, err.message);
         // Retry once after delay (handles cached/loaded race conditions)
@@ -1675,7 +1675,7 @@ section {
       setTimeout(attemptAutoplay, 1500);
     }
 
-    // 3. Unmute on first user interaction
+    // 3. Unmute on first user interaction (keeps 30% volume)
     function unmuteOnInteraction() {
       if (hasUnmuted || !bgMusic) return;
       
@@ -1688,6 +1688,7 @@ section {
 
     function enableSound() {
       bgMusic.muted = false;
+      // Volume stays at 0.3 (30%)
       hasUnmuted = true;
       
       if (musicToggleBtn) {
@@ -1698,7 +1699,7 @@ section {
       ['click', 'touchstart', 'keydown', 'scroll'].forEach(evt => {
         document.removeEventListener(evt, unmuteOnInteraction, { passive: true });
       });
-      console.log('🔊 Sound enabled via interaction');
+      console.log('🔊 Sound enabled via interaction (30% volume)');
     }
 
     ['click', 'touchstart', 'keydown', 'scroll'].forEach(evt => {
